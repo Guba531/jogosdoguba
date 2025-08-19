@@ -13,7 +13,7 @@ const imageUrls = [
 // Variaveis globais do jogo
 let cards = [];
 let flippedCards = [];
-let matchedPair = 0;
+let matchedPairs = 0;
 let attempts = 0;
 let gameStarted = false;
 let startTime = null;
@@ -34,4 +34,69 @@ function shuffleArray(array) {
         [shuffled[i], shuffled[j] = shuffled[j], shuffled[i]];
     }
     return shuffled;
+}
+
+function createCardsArray() {
+    const pairs = [...imageUrls, ...imageUrls];//Duplica cada imagem para jogadores
+    return shuffleArray(pairs);//Embaralha as cartas
+}
+
+function createCardElement(imageUrl, index)  {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.index = index;
+    card.dataset.image = imageUrl;
+
+    card.innerHTML = `
+    <div class="card-face card-back">?</div>
+    <div class="card-face card-front">
+        <img src="${imageUrl}" alt="Carta ${index}">
+    </div>
+
+    `; 
+
+    card.addEventListener('click', () => flipCard(card));
+
+    return card;
+}
+
+function flipCard(card) {
+    if (!gameStarted) {
+        startGame();
+    }
+
+    if (card.classList.add('flipped') ||
+    card.classList.add('matched') |
+    flippedCards.length >= 2) {
+     return;
+
+    }
+
+    card.classList.add('flipped');
+    flippedCards.push(card);
+
+    if (flippedCards.length === 2) {
+        attempts++;
+        attemptsSpan.textContent = attempts;
+
+        setTimeout(checkMatch, 1000);
+    }
+}
+
+function checkMatch() {
+    const [card1, card2] = flippedCards;
+    if (card1.dataset.image === card2.dataset.image) {
+        card1.classList.add('matched');
+        card2.classList.add('matched');
+        matchedPairs++;
+
+        if (matchedPairs === 8) {
+            endGame();
+        }
+    } else {
+        card1.classList.remove('flipped');
+        card2.classList.remove('flipped');
+    }
+
+    flippedCards = [];
 }
